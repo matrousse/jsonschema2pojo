@@ -29,9 +29,11 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
 import org.jsonschema2pojo.Schema;
 import org.jsonschema2pojo.SchemaMapper;
 import org.jsonschema2pojo.exception.ClassAlreadyExistsException;
+
 import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JBlock;
 import com.sun.codemodel.JClass;
@@ -186,7 +188,20 @@ public class ObjectRule implements Rule<JPackage, JType> {
     private JType getSuperType(String nodeName, JsonNode node, JClassContainer jClassContainer, Schema schema) {
         JType superType = jClassContainer.owner().ref(Object.class);
         if (node.has("extends")) {
-            superType = ruleFactory.getSchemaRule().apply(nodeName + "Parent", node.get("extends"), jClassContainer, schema);
+        	if (node.get("extends").has("javaType")) {
+        		String fqn = node.get("extends").get("javaType").asText();
+        		// MRS Patch
+				try {
+					superType = jClassContainer.owner().parseType(fqn);
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+        	else {
+        		superType = ruleFactory.getSchemaRule().apply(nodeName + "Parent", node.get("extends"), jClassContainer, schema);
+        	}
+        		
         }
         return superType;
     }

@@ -92,8 +92,11 @@ public final class Jsonschema2Pojo {
         for (Iterator<File> sources = config.getSource(); sources.hasNext();) {
             File source = sources.next();
 
+            // Patch MRS - Exclude CVS folders
             if (source.isDirectory()) {
-                generateRecursive(config, mapper, codeModel, defaultString(config.getTargetPackage()), Arrays.asList(source.listFiles()));
+            	if (!"CVS".equals(source.getName())) {
+            		generateRecursive(config, mapper, codeModel, defaultString(config.getTargetPackage()), Arrays.asList(source.listFiles()));
+            	}
             } else {
                 mapper.generate(codeModel, getNodeName(source), defaultString(config.getTargetPackage()), source.toURI().toURL());
             }
@@ -115,7 +118,9 @@ public final class Jsonschema2Pojo {
             if (child.isFile()) {
                 mapper.generate(codeModel, getNodeName(child), defaultString(packageName), child.toURI().toURL());
             } else {
-                generateRecursive(config, mapper, codeModel, packageName + "." + child.getName(), Arrays.asList(child.listFiles()));
+            	if (!"CVS".equals(child.getName())) {
+            		generateRecursive(config, mapper, codeModel, packageName + "." + child.getName(), Arrays.asList(child.listFiles()));
+            	}
             }
         }
     }
